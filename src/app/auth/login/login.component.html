@@ -1,0 +1,40 @@
+<h2>Sign in</h2>
+
+<form [formGroup]="loginForm" (ngSubmit)="submit()">
+  <label>
+    <span>Email: </span>
+    <input
+      formControlName="username"
+      type="email"
+      autocomplete="username"
+      placeholder="email@example.com"
+    />
+  </label>
+  @if (loginForm.controls.username.touched && loginForm.controls.username.invalid) {
+    <ul aria-live="polite">
+      @if (loginForm.controls.username.hasError('required')) {
+        <li>Email is required</li>
+      }
+      @if (loginForm.controls.username.hasError('email')) {
+        <li>Please enter a valid email address</li>
+      }
+    </ul>
+  }
+
+  <label>
+    <span>Password: </span>
+    <input
+      formControlName="password"
+      type="password"
+      autocomplete="current-password"
+      placeholder="**********"
+    />
+  </label>
+  @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+    <ul aria-live="polite">
+      <li>Password is required</li>
+    </ul>
+  }
+
+  <button type="submit" [disabled]="loginForm.invalid">Send</button>
+</form>

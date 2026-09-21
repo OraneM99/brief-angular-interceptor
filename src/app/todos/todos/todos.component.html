@@ -1,0 +1,26 @@
+<h2>Todos</h2>
+
+<ul>
+  @for (todo of todoList(); track todo.id) {
+    <li>{{ todo.title }}</li>
+  } @empty {
+    <li>No todo yet.</li>
+  }
+</ul>
+
+<h2>Create a new todo item:</h2>
+<form [formGroup]="todoForm" (ngSubmit)="submit()">
+  <label>
+    <span>Title: </span>
+    <input formControlName="title" autocomplete="off" />
+  </label>
+  @if (todoForm.controls.title.touched && todoForm.controls.title.invalid) {
+    <ul aria-live="polite">
+      <li>Title is required</li>
+    </ul>
+  }
+
+  <button type="submit" [disabled]="todoForm.invalid">Add</button>
+</form>
+
+<button type="button" (click)="logout()">Déconnexion</button>
