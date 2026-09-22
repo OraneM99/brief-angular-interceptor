@@ -2,7 +2,6 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-
 import { TodoItem } from '../../core/models/todo-item.model';
 import { TodoService } from '../todos.service';
 import { AuthService } from '../../service/auth-service';
@@ -25,6 +24,7 @@ export class TodosComponent implements OnInit {
       validators: [Validators.required],
     }),
   });
+  protected readonly isAdmin = signal(this.authService.hasRole('ROLE_ADMIN'));
 
   ngOnInit(): void {
     this.todoService.getTodos().subscribe((todos) => this.todoList.set(todos));
