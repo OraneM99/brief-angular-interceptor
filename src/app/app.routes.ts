@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './auth/guard/auth-guard';
+import { authGuard } from './auth/guard/auth-guard';
 
 export const routes: Routes = [
   {
@@ -12,7 +12,7 @@ export const routes: Routes = [
     path: 'todos',
     loadComponent: () =>
       import('./todos/todos/todos.component').then(({ TodosComponent }) => TodosComponent),
-    canActivate: [AuthGuard],
+    canActivate: [authGuard],
     data: { authorities: ['ROLE_USER', 'ROLE_ADMIN'] },
   },
   { path: '**', redirectTo: '' },

@@ -7,6 +7,12 @@ interface AuthResponse {
   username: string;
 }
 
+interface UserInfo {
+  sub: string;
+  roles: string[];
+  exp?: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -14,17 +20,25 @@ export class AuthService {
   private http = inject(HttpClient);
   private readonly baseUrl = 'http://localhost:8080/auth';
 
-  /* Il faut décoder le payload du JWT pour extraire le rôle */
-  private decodeToken(token: string) {
-    const payload = token.split('.')[1];
-    const decoded = atob(payload);
-    return JSON.parse(decoded);
+  private userInfo = signal<UserInfo | null>(null);
+  readonly user = this.userInfo.asReadonly();
+
+  constructor() {
+    const token = this.getToken();
+    if (token) {
+      this.userInfo.set(this.decodeToken(token));
+    }
   }
 
-  /* Puis transformer le 'scope' en tableau */
-  private extractAuthorities(token: string): string[] {
-    const payload = this.decodeToken(token);
-    return payload.scope ? payload.scope.split(' ') : [];
+  /* Il faut décoder le payload du JWT pour extraire le rôle */
+  private decodeToken(token: string): UserInfo | null {
+    const payload = token.split('.')[1];
+    const decoded = JSON.parse(atob(payload));
+    return {
+      sub: decoded.sub,
+      roles: decoded.scope ? decoded.scope.split(' ') : [],
+      exp: decoded.exp,
+    };
   }
 
   getToken(): string | null {
@@ -32,13 +46,11 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+    return !!this.userInfo();
   }
 
-  /* Récupération du role de l'utilisateur */
   getAuthorities(): string[] {
-    const authorities = localStorage.getItem('authorities');
-    return authorities ? JSON.parse(authorities) : [];
+    return this.userInfo()?.roles ?? [];
   }
 
   hasRole(role: string): boolean {
@@ -55,8 +67,7 @@ export class AuthService {
         tap((response) => {
           localStorage.setItem('token', response.token);
           localStorage.setItem('username', response.username);
-          const authorities = this.extractAuthorities(response.token);
-          localStorage.setItem('authorities', JSON.stringify(authorities));
+          this.userInfo.set(this.decodeToken(response.token));
         }),
       );
   }
@@ -64,6 +75,6 @@ export class AuthService {
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-    localStorage.removeItem('roles');
+    this.userInfo.set(null);
   }
 }
